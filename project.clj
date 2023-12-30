@@ -8,8 +8,6 @@
                                   [com.bhauman/figwheel-main "0.2.18"]
                                   ;; optional but recommended
                                   [com.bhauman/rebel-readline-cljs "0.1.4"]
-                                  ;; NICK: add support for resolving Javascript promises:
-                                  [jamesmacaulay/cljs-promises "0.1.0"]
                                   ;; Other useful stuff:
                                   [binaryage/oops "0.7.2"]]
                    :resource-paths ["target"]

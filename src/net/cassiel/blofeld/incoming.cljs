@@ -1,7 +1,6 @@
 (ns net.cassiel.blofeld.incoming
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cljs.core.async :refer [>!]]
-            [cljs-promises.async :as a :refer-macros [<?]]
             [net.cassiel.blofeld.sysex-in :as sysex-in])
   )
 

@@ -7,13 +7,11 @@
             [net.cassiel.blofeld.async-tools :as tt]
             [net.cassiel.blofeld.core :as core]
             [clojure.core.match :refer [match]]
-            [cljs-promises.core :as p]
-            [cljs-promises.async :as a :refer-macros [<?]]
             [cljs.core.async :refer [put! chan <! close!]]))
 
 (def max-api (js/require "max-api"))
 
-(a/extend-promises-as-pair-channels!)
+;; (a/extend-promises-as-pair-channels!)
 
 (def *STATE* (atom {}))
 
