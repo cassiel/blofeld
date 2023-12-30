@@ -1,7 +1,7 @@
 (defproject promises "0.1.0-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.11.1"]]
-  :profiles {:dev {:dependencies [[org.clojure/clojurescript "1.11.60"]
-                                  [org.clojure/core.async "1.6.673"]
+  :profiles {:dev {:dependencies [[org.clojure/clojurescript "1.11.121"]
+                                  [org.clojure/core.async "1.6.681"]
                                   [org.clojure/core.match "1.0.1"]
                                   [com.stuartsierra/component "1.1.0"]
                                   [net.cassiel/lifecycle "0.1.0-SNAPSHOT"]
