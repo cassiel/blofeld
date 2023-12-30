@@ -1,0 +1,8 @@
+-*- mode: org; mode: visual-line; -*-
+#+STARTUP: indent
+
+* blofeld
+
+A spin-off from [[https://github.com/cassiel/clojure4node4max][Clojure for Node for Max]], which is a set of example projects which connect Max to ClojureScript via Node. We started the Blofeld project as another example, but it's getting sufficiently complex that it deserves its own repository.
+
+Summary: a push to develop a simple librarian for the Blofeld. The heavy lifting is being done in ClojureScript hosted in Node, with Max there as a host providing MIDI I/O and some on-screen controls. At this point there's no particular reason why we couldn't have gone for a web host instead (or Electron), except for the history of Max demonstrations.
