@@ -6,6 +6,7 @@
             [net.cassiel.blofeld.component.max-api :as max-api]
             [net.cassiel.blofeld.async-tools :as async-tools]
             [net.cassiel.blofeld.midi :as midi]
+            [cljs.core.match :refer-macros [match]]
             [cljs.core.async :as a :refer [>!]]))
 
 (defn handle-preset-recall
@@ -14,11 +15,31 @@
   (go (>! (-> presets :fast-chan)
           [bank pgm])))
 
+(defn matches [wanted actual]
+  (match [(seq wanted) (seq actual)]
+         [nil _] true
+         [_ nil] false
+         [([\. & wanted'] :seq) ([_ & actual'] :seq)] (recur wanted' actual')
+         [([w & wanted'] :seq) ([a & actual'] :seq)] (and (= w a) (recur wanted' actual'))
+         :else false))
+
 (defn handle-sysex
   "Bytes is a seq containing a leading 0xF0, or else an isolated 0xF7."
   [presets bytes]
   (println "sysex chunk starting " (first bytes) " len " (count bytes))
-  )
+
+  (cond
+    (matches [m/EOX] bytes)
+    (println "> EOX")
+
+    (matches [m/SOX m/WALDORF m/BLOFELD \. m/SNDD] bytes)
+    (println "> SNDD - Sound Dump")
+
+    (matches [m/SOX m/WALDORF m/BLOFELD \. m/SNDP] bytes)
+    (println "> SNDP - Sound Parameter Change")
+
+    :else
+    (println "> unknown sysex")))
 
 (defrecord PRESETS [max-api fast-chan slow-chan installed?]
   Object

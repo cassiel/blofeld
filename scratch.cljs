@@ -6,6 +6,7 @@
             [net.cassiel.blofeld.sysex-in :as sysex-in]
             [net.cassiel.blofeld.async-tools :as tt]
             [net.cassiel.blofeld.core :as core]
+            [net.cassiel.blofeld.component.presets :as presets]
             [clojure.core.match :refer [match]]
             [cljs.core.async :refer [put! chan <! close!]]))
 
@@ -57,6 +58,11 @@
 
 
 ;; ----- COMPONENT
+
+(presets/matches (seq [99]) [99])
+
+
+;; -----
 
 (reset! core/S (core/system))
 
