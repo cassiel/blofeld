@@ -6,37 +6,35 @@
             [net.cassiel.blofeld.async-tools :as async-tools]
             [cljs.core.async :refer [>!]]))
 
-(def STATE (atom nil))
-
-(defn handle-byte
+(defn handle-sysex-byte
   "Handle a byte of sysex MIDI input."
-  [presets i]
+  [presets *state* i]
   ;; This flushing will output a sysex as [F0 nn nn nn ...] and as [F7] separately.
-  ;; We don't flush except on message bytes, so this only works if we don't care
-  ;; about getting the F7 straight away; all other messages will get delayed.
+  ;; We flush on status byte, so the F7 delivers the F0 message and vice versa.
   (when (>= i 0x80)
-    (when-let [msg (:partial-sysex (deref STATE))]
+    (when-let [msg (:partial-sysex (deref *state*))]
       (presets/handle-sysex presets (reverse msg))
-      (swap! STATE dissoc :partial-sysex)))
+      (swap! *state* dissoc :partial-sysex)))
 
   ;; Bytes accumulated backwards (hence `reverse` above):
-  (swap! STATE update :partial-sysex conj i))
+  (swap! *state* update :partial-sysex conj i))
 
 (defn handle-ctlin
   "handle control change. The only ones we care about are 0 and 32 for bank select.
    In fact we only have 8 banks so val will be 0 [A]..7 [H], for ctl as 0."
-  [val ctl]
-  (println "Got ctl " val ctl)
+  [*state* val ctl]
+  (println "Got ctl v=" val "c=" ctl)
   (when (= ctl 0)
-    (swap! STATE assoc :bank val)))
+    (swap! *state* assoc :bank val)))
 
 (defn handle-pgmin
-  "Handle program change, probably following a bank select: programs indexed from 1."
-  [presets pgm]
-  (let [bank (or (-> STATE deref :bank) 0)
+  "Handle program change, probably following a bank select: programs indexed from 1
+   (thank you, Max)."
+  [presets *state* pgm]
+  (let [bank (or (-> *state* deref :bank) 0)
         p0 (dec pgm)]
-    (swap! STATE assoc :program p0)
-    (println "Got pgm " bank p0)
+    (swap! *state* assoc :program p0)
+    (println "Got pgm b=" bank "p=" p0)
     ;; FIX: call into data component instead.
     (presets/handle-preset-recall presets bank pgm)))
 
@@ -49,13 +47,14 @@
     (starting this
               :on installed?
               :action (fn [] (let [max-api (:max-api max-api)
-                                   number (.-MESSAGE_TYPES.NUMBER max-api)]
-                               (reset! STATE nil)
+                                   number (.-MESSAGE_TYPES.NUMBER max-api)
+                                   *state* (atom nil)]
                                (doto max-api
-                                 (.addHandler number (partial handle-byte max-api))
-                                 (.addHandler "ctlin" handle-ctlin)
-                                 (.addHandler "pgmin" (partial handle-pgmin presets)))
+                                 (.addHandler number (partial handle-sysex-byte presets *state*))
+                                 (.addHandler "ctlin" (partial handle-ctlin *state*))
+                                 (.addHandler "pgmin" (partial handle-pgmin presets *state*)))
                                (assoc this
+                                      :*state* *state*
                                       :installed? true)))))
 
   (stop [this]
@@ -65,4 +64,5 @@
                                    number (.-MESSAGE_TYPES.NUMBER max-api)]
                                (do (dorun (map #(.removeHandlers max-api %) [number "ctlin" "pgmin"]))
                                    (assoc this
+                                          :*state* nil
                                           :installed? false)))))))

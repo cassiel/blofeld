@@ -15,8 +15,9 @@
           [bank pgm])))
 
 (defn handle-sysex
-  "Bytes is a seq containing a leading 0xF0 but not trailing 0xF7."
+  "Bytes is a seq containing a leading 0xF0, or else an isolated 0xF7."
   [presets bytes]
+  (println "sysex chunk starting " (first bytes) " len " (count bytes))
   )
 
 (defrecord PRESETS [max-api fast-chan slow-chan installed?]
