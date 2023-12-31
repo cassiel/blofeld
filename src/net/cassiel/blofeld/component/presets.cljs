@@ -19,7 +19,7 @@
   (match [(seq wanted) (seq actual)]
          [nil _] true
          [_ nil] false
-         [([\. & wanted'] :seq) ([_ & actual'] :seq)] (recur wanted' actual')
+         [([:any & wanted'] :seq) ([_ & actual'] :seq)] (recur wanted' actual')
          [([w & wanted'] :seq) ([a & actual'] :seq)] (and (= w a) (recur wanted' actual'))
          :else false))
 
@@ -32,10 +32,16 @@
     (matches [m/EOX] bytes)
     (println "> EOX")
 
-    (matches [m/SOX m/WALDORF m/BLOFELD \. m/SNDD] bytes)
-    (println "> SNDD - Sound Dump")
+    (matches [m/SOX m/WALDORF m/BLOFELD :any m/SNDD] bytes)
+    (let [checksum (last bytes)
+          data-check (->> bytes
+                          (drop 7)
+                          butlast
+                          (reduce +)
+                          (bit-and 0x7F))]
+      (println "> SNDD - Sound Dump chk=" checksum "data-check=" data-check))
 
-    (matches [m/SOX m/WALDORF m/BLOFELD \. m/SNDP] bytes)
+    (matches [m/SOX m/WALDORF m/BLOFELD :any m/SNDP] bytes)
     (println "> SNDP - Sound Parameter Change")
 
     :else
