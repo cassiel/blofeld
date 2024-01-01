@@ -8,9 +8,12 @@
             [net.cassiel.blofeld.core :as core]
             [net.cassiel.blofeld.component.presets :as presets]
             [clojure.core.match :refer [match]]
-            [cljs.core.async :refer [put! chan <! close!]]))
+            [cljs.core.async :refer [put! chan <! close!]]
+            [cljs.core.async.interop :refer-macros [<p!]]))
 
 (def max-api (js/require "max-api"))
+
+(.getDict max-api "BLOFELD")
 
 ;; (a/extend-promises-as-pair-channels!)
 
@@ -68,3 +71,10 @@
 
 (core/start)
 (core/stop)
+
+;; ----- DICTIONARIES
+
+(let [max-api (-> (deref core/S) :max-api :max-api)]
+  (go
+    (let [d (<p! (.getDict max-api "BLOFELD"))]
+      (println (js->clj d :keywordize-keys true)))))
