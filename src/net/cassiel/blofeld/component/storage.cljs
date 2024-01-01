@@ -51,12 +51,10 @@
     (starting this
               :on installed?
               :action #(assoc this
-                              :max-api max-api
                               :installed? true)))
 
   (stop [this]
     (stopping this
               :on installed?
               :action #(assoc this
-                              :max-api nil
                               :installed? false))))
