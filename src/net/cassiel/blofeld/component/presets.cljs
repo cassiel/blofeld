@@ -10,7 +10,8 @@
             [cljs.core.async :as a :refer [>!]]))
 
 (defn handle-preset-recall
-  "Preset recall into the 'fast' channel; gets throttled to the slow channel."
+  "Preset recall into the 'fast' channel; gets throttled to the slow channel.
+   pgm starts from 0."
   [presets bank pgm]
   (go (>! (-> presets :fast-chan)
           [bank pgm])))
@@ -22,6 +23,15 @@
          [([:any & wanted'] :seq) ([_ & actual'] :seq)] (recur wanted' actual')
          [([w & wanted'] :seq) ([a & actual'] :seq)] (and (= w a) (recur wanted' actual'))
          :else false))
+
+(defn patch-name
+  "Extract sixteen-byte patch name. `bytes` is 0xF0 onwards."
+  [bytes]
+  (let [name-bytes (->> bytes
+                        (drop m/SNDD-DATA-START)        ;; Drop headers, get to the data.
+                        (drop m/SNDD-NAME-OFFSET)
+                        (take m/SNDD-NAME-LENGTH))]
+    (apply str (map char name-bytes))))
 
 (defn handle-sysex
   "Bytes is a seq containing a leading 0xF0, or else an isolated 0xF7."
@@ -35,11 +45,11 @@
     (matches [m/SOX m/WALDORF m/BLOFELD :any m/SNDD] bytes)
     (let [checksum (last bytes)
           data-check (->> bytes
-                          (drop 7)
+                          (drop m/SNDD-DATA-START)
                           butlast
                           (reduce +)
                           (bit-and 0x7F))]
-      (println "> SNDD - Sound Dump chk=" checksum "data-check=" data-check))
+      (println "> SNDD - Sound Dump chk=" checksum "data-check=" data-check "patch-name=" (patch-name bytes)))
 
     (matches [m/SOX m/WALDORF m/BLOFELD :any m/SNDP] bytes)
     (println "> SNDP - Sound Parameter Change")
@@ -62,6 +72,7 @@
                          ;; Deal with program change:
                          (go-loop []
                            (when-let [[hi lo] (<! slow-chan)]
+                             (println "Requesting [SNDR] hi=" hi "lo=" lo)
                              (midi/output-seq (-> max-api :max-api)
                                               [m/SOX m/WALDORF m/BLOFELD m/BROADCAST-ID m/SNDR hi lo 0 m/EOX])
                              (recur)))

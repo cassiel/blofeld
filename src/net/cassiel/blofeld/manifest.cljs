@@ -15,3 +15,16 @@
 
 ;; Sound Parameter Change:
 (def SNDP 0x20)
+
+;; Offset of first data byte in sound dump (from 0xF0 inclusive):
+(def SNDD-DATA-START 7)
+
+;; Start of name in the data (after header stripped):
+(def SNDD-NAME-OFFSET 363)
+
+;; Length of patch name:
+(def SNDD-NAME-LENGTH 16)
+
+;; Timeout before requesting sound on program change. If a sound is requested,
+;; the Blofeld will not send subsequent bank changes until done.
+(def SOUND-REQUEST-MS 1000)

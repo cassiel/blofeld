@@ -36,7 +36,7 @@
     (swap! *state* assoc :program p0)
     (println "Got pgm b=" bank "p=" p0)
     ;; FIX: call into data component instead.
-    (presets/handle-preset-recall presets bank pgm)))
+    (presets/handle-preset-recall presets bank p0)))
 
 (defrecord HANDLERS [max-api presets installed?]
   Object
@@ -54,7 +54,7 @@
                                  (.addHandler "ctlin" (partial handle-ctlin *state*))
                                  (.addHandler "pgmin" (partial handle-pgmin presets *state*)))
                                (assoc this
-                                      :*state* *state*
+                                      :*state* *state*  ;; Plant that there in case we want to debug.
                                       :installed? true)))))
 
   (stop [this]
