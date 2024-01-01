@@ -4,6 +4,7 @@
             [net.cassiel.lifecycle :refer [starting stopping]]
             [net.cassiel.blofeld.manifest :as m]
             [net.cassiel.blofeld.component.max-api :as max-api]
+            [net.cassiel.blofeld.component.storage :as storage]
             [net.cassiel.blofeld.async-tools :as async-tools]
             [net.cassiel.blofeld.midi :as midi]
             [cljs.core.match :refer-macros [match]]
@@ -24,15 +25,6 @@
          [([w & wanted'] :seq) ([a & actual'] :seq)] (and (= w a) (recur wanted' actual'))
          :else false))
 
-(defn patch-name
-  "Extract sixteen-byte patch name. `bytes` is 0xF0 onwards."
-  [bytes]
-  (let [name-bytes (->> bytes
-                        (drop m/SNDD-DATA-START)        ;; Drop headers, get to the data.
-                        (drop m/SNDD-NAME-OFFSET)
-                        (take m/SNDD-NAME-LENGTH))]
-    (apply str (map char name-bytes))))
-
 (defn handle-sysex
   "Bytes is a seq containing a leading 0xF0, or else an isolated 0xF7."
   [presets bytes]
@@ -43,13 +35,17 @@
     (println "> EOX")
 
     (matches [m/SOX m/WALDORF m/BLOFELD :any m/SNDD] bytes)
-    (let [checksum (last bytes)
+    (let [hi (nth bytes m/SNDD-LOCATION-HI)
+          lo (nth bytes m/SNDD-LOCATION-LO)
+          checksum (last bytes)
           data-check (->> bytes
                           (drop m/SNDD-DATA-START)
                           butlast
                           (reduce +)
                           (bit-and 0x7F))]
-      (println "> SNDD - Sound Dump chk=" checksum "data-check=" data-check "patch-name=" (patch-name bytes)))
+      (do
+        (println "> SNDD - Sound Dump chk=" checksum "data-check=" data-check "patch-name=" (storage/patch-name bytes))
+        (storage/store-preset (:storage presets) hi lo bytes)))
 
     (matches [m/SOX m/WALDORF m/BLOFELD :any m/SNDP] bytes)
     (println "> SNDP - Sound Parameter Change")
@@ -57,7 +53,7 @@
     :else
     (println "> unknown sysex")))
 
-(defrecord PRESETS [max-api fast-chan slow-chan installed?]
+(defrecord PRESETS [max-api storage fast-chan slow-chan installed?]
   Object
   (toString [this] "PRESETS")
 

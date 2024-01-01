@@ -6,14 +6,23 @@
             [net.cassiel.blofeld.sysex-in :as sysex-in]
             [net.cassiel.blofeld.async-tools :as tt]
             [net.cassiel.blofeld.core :as core]
+            [net.cassiel.blofeld.component.storage :as storage]
             [net.cassiel.blofeld.component.presets :as presets]
             [clojure.core.match :refer [match]]
             [cljs.core.async :refer [put! chan <! close!]]
-            [cljs.core.async.interop :refer-macros [<p!]]))
+            [cljs.core.async.interop :refer-macros [<p!]]
+            [goog.string :as gstring]
+            [goog.string.format]))
 
 (def max-api (js/require "max-api"))
 
+(storage/patch-index-tag 3 0)
+
 (.getDict max-api "BLOFELD")
+
+(nth (range 100) 33)
+
+(nth "ABC" 1)
 
 ;; (a/extend-promises-as-pair-channels!)
 
@@ -59,6 +68,8 @@
 
 (js/require "max-api")
 
+(gstring/format "%03d" 99)
+
 
 ;; ----- COMPONENT
 
@@ -73,6 +84,12 @@
 (core/stop)
 
 ;; ----- DICTIONARIES
+
+(keys {:A 1 :B 2})
+
+(let [max-api (-> (deref core/S) :max-api :max-api)]
+  (go
+    (<p! (.updateDict max-api "BLOFELD" "a.b.c" (js/Date.)))))
 
 (let [max-api (-> (deref core/S) :max-api :max-api)]
   (go

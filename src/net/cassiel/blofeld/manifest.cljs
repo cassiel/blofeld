@@ -16,6 +16,10 @@
 ;; Sound Parameter Change:
 (def SNDP 0x20)
 
+;; Location fields for patches:
+(def SNDD-LOCATION-HI 5)
+(def SNDD-LOCATION-LO 6)
+
 ;; Offset of first data byte in sound dump (from 0xF0 inclusive):
 (def SNDD-DATA-START 7)
 
@@ -28,3 +32,6 @@
 ;; Timeout before requesting sound on program change. If a sound is requested,
 ;; the Blofeld will not send subsequent bank changes until done.
 (def SOUND-REQUEST-MS 1000)
+
+;; Dictionary name:
+(def BLOFELD-DICT "BLOFELD")
