@@ -24,6 +24,8 @@
 
 (nth "ABC" 1)
 
+(js/Date.)
+
 ;; (a/extend-promises-as-pair-channels!)
 
 (def *STATE* (atom {}))

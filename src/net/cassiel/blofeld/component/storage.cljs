@@ -38,7 +38,8 @@
         tag (patch-index-tag bank pgm)
         max-api (:max-api storage)]
     (go (<p! (ocall (:max-api max-api) :setDict m/BLOFELD-DICT (clj->js {:patches {tag {:name name
-                                                                                        :data bytes'}}}))))
+                                                                                        :data bytes'
+                                                                                        :time (js/Date.)}}}))))
     )
   )
 
