@@ -2,15 +2,15 @@
 	"patcher" : 	{
 		"fileversion" : 1,
 		"appversion" : 		{
-			"major" : 8,
-			"minor" : 6,
+			"major" : 9,
+			"minor" : 0,
 			"revision" : 0,
 			"architecture" : "x64",
 			"modernui" : 1
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 205.0, 237.0, 1047.0, 853.0 ],
+		"rect" : [ 986.0, 278.0, 1047.0, 853.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -198,7 +198,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 450.0, 205.0, 189.0, 42.0 ],
+					"patching_rect" : [ 420.0, 175.0, 189.0, 42.0 ],
 					"text" : "Sysex bytes come in as raw integers; everything else is tagged."
 				}
 
@@ -444,7 +444,7 @@
 , 			{
 				"box" : 				{
 					"id" : "obj-14",
-					"items" : [ "AU DLS Synth 1", ",", "IAC Driver IAC_1", ",", "IAC Driver IAC_2", ",", "Network Session 1", ",", "Lightpad BLOCK ", ",", "Arturia KeyStep 32", ",", "Fireface UC Mac (", ",", "Fireface UC Mac ( #2", ",", "Blofeld", ",", "from Max 1", ",", "from Max 2" ],
+					"items" : [ "AU DLS Synth 1", ",", "IAC Driver IAC 1", ",", "USB MIDI Device Port 1", ",", "USB MIDI Device Port 2", ",", "Arturia KeyStep 32", ",", "Blofeld", ",", "from Max 1", ",", "from Max 2" ],
 					"maxclass" : "umenu",
 					"numinlets" : 1,
 					"numoutlets" : 3,
@@ -469,7 +469,7 @@
 , 			{
 				"box" : 				{
 					"id" : "obj-11",
-					"items" : [ "IAC Driver Bus 1", ",", "USB MIDI Device Port 1", ",", "USB MIDI Device Port 2", ",", "Arturia KeyStep 32", ",", "to Max 1", ",", "to Max 2", ",", "Blofeld" ],
+					"items" : [ "IAC Driver IAC 1", ",", "USB MIDI Device Port 1", ",", "USB MIDI Device Port 2", ",", "Arturia KeyStep 32", ",", "Blofeld", ",", "to Max 1", ",", "to Max 2" ],
 					"maxclass" : "umenu",
 					"numinlets" : 1,
 					"numoutlets" : 3,
@@ -596,8 +596,6 @@
 					"saved_object_attributes" : 					{
 						"autostart" : 0,
 						"defer" : 0,
-						"node_bin_path" : "",
-						"npm_bin_path" : "",
 						"watch" : 0
 					}
 ,
