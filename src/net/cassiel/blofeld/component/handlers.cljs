@@ -9,12 +9,12 @@
 
 (defn handle-sysex-byte
   "Handle a byte of sysex MIDI input."
-  [presets *state* i]
+  [max-api presets *state* i]
   ;; This flushing will output a sysex as [F0 nn nn nn ...] and as [F7] separately.
   ;; We flush on status byte, so the F7 delivers the F0 message and vice versa.
   (when (>= i 0x80)
     (when-let [msg (:partial-sysex (deref *state*))]
-      (presets/handle-sysex presets (reverse msg))
+      (presets/handle-sysex max-api presets (reverse msg))
       (swap! *state* dissoc :partial-sysex)))
 
   ;; Bytes accumulated backwards (hence `reverse` above):
@@ -27,7 +27,7 @@
   (println "Got ctl v=" val "c=" ctl)
   (when (= ctl 0)
     (swap! *state* assoc :bank val)
-    (.outlet max-api "seen-bank" val)))
+    (ocall max-api :outlet "seen-bank" val)))
 
 (defn handle-pgmin
   "Handle program change, probably following a bank select: programs indexed from 1
@@ -67,7 +67,7 @@
                                    number (.-MESSAGE_TYPES.NUMBER max-api)
                                    *state* (atom nil)]
                                (doto max-api
-                                 (ocall :addHandler number (partial handle-sysex-byte presets *state*))
+                                 (ocall :addHandler number (partial handle-sysex-byte max-api presets *state*))
                                  (ocall :addHandler "ctlin" (partial handle-ctlin max-api *state*))
                                  (ocall :addHandler "pgmin" (partial handle-pgmin presets *state*))
                                  (ocall :addHandler "force-bank" (partial handle-force-bank max-api presets *state*)))

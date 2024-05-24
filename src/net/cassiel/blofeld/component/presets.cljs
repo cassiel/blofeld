@@ -8,7 +8,8 @@
             [net.cassiel.blofeld.async-tools :as async-tools]
             [net.cassiel.blofeld.midi :as midi]
             [cljs.core.match :refer-macros [match]]
-            [cljs.core.async :as a :refer [>!]]))
+            [cljs.core.async :as a :refer [>!]]
+            [oops.core :refer [ocall]]))
 
 (defn handle-preset-recall
   "Preset recall into the 'fast' channel; gets throttled to the slow channel.
@@ -27,7 +28,7 @@
 
 (defn handle-sysex
   "Bytes is a seq containing a leading 0xF0, or else an isolated 0xF7."
-  [presets bytes]
+  [max-api presets bytes]
   (println "sysex chunk starting " (first bytes) " len " (count bytes))
 
   (cond
@@ -51,8 +52,10 @@
     (let [location (nth bytes m/SNDP-LOCATION-LOCATION)   ; Unused for now - assumed 0.
           hi       (nth bytes m/SNDP-LOCATION-HI)
           lo       (nth bytes m/SNDP-LOCATION-LO)
+          param    (+ (* hi 128) lo)
           val      (nth bytes m/SNDP-LOCATION-VAL)]
-      (println "> SNDP - Sound Parameter Change: param=" (+ (* hi 128) lo) " val=" val))
+      (println "> SNDP - Sound Parameter Change: param=" param " val=" val)
+      (ocall max-api :outlet "param-change" param val))
 
     :else
     (println "> unknown sysex")))
