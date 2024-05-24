@@ -29,6 +29,18 @@
 ;; Length of patch name:
 (def SNDD-NAME-LENGTH 16)
 
+;; (Name: I know.) Location (edit buffer), 0 for sound mode, various for multi mode:
+(def SNDP-LOCATION-LOCATION 5)
+
+;; High byte of parameter index:
+(def SNDP-LOCATION-HI 6)
+
+;; Low byte of parameter index:
+(def SNDP-LOCATION-LO 7)
+
+;; Parameter value:
+(def SNDP-LOCATION-VAL 8)
+
 ;; Timeout before requesting sound on program change. If a sound is requested,
 ;; the Blofeld will not send subsequent bank changes until done.
 (def SOUND-REQUEST-MS 1000)

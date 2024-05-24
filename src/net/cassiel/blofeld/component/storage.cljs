@@ -29,7 +29,9 @@
 
 (defn store-preset
   "Store a preset. `bytes` starts from 0xF0, includes everything up to but excluding 0xF7.
-   (The byte data might well encode a location as well, which we ignore and discard.)"
+   We strip out all header information and checksum.
+   (The byte data might well encode a location as well, which we ignore and discard.)
+   For now, storage just means outputting a dictionary with a single entry."
   [storage bank pgm bytes]
   (let [bytes' (->> bytes
                     (drop m/SNDD-DATA-START) ; Lose 0xF0 and all header information.

@@ -35,9 +35,9 @@
     (println "> EOX")
 
     (matches [m/SOX m/WALDORF m/BLOFELD :any m/SNDD] bytes)
-    (let [hi (nth bytes m/SNDD-LOCATION-HI)
-          lo (nth bytes m/SNDD-LOCATION-LO)
-          checksum (last bytes)
+    (let [hi         (nth bytes m/SNDD-LOCATION-HI)
+          lo         (nth bytes m/SNDD-LOCATION-LO)
+          checksum   (last bytes)
           data-check (->> bytes
                           (drop m/SNDD-DATA-START)
                           butlast
@@ -48,7 +48,11 @@
         (storage/store-preset (:storage presets) hi lo bytes)))
 
     (matches [m/SOX m/WALDORF m/BLOFELD :any m/SNDP] bytes)
-    (println "> SNDP - Sound Parameter Change")
+    (let [location (nth bytes m/SNDP-LOCATION-LOCATION)   ; Unused for now - assumed 0.
+          hi       (nth bytes m/SNDP-LOCATION-HI)
+          lo       (nth bytes m/SNDP-LOCATION-LO)
+          val      (nth bytes m/SNDP-LOCATION-VAL)]
+      (println "> SNDP - Sound Parameter Change: param=" (+ (* hi 128) lo) " val=" val))
 
     :else
     (println "> unknown sysex")))
