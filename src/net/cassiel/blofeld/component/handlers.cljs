@@ -2,9 +2,11 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [com.stuartsierra.component :as component]
             [net.cassiel.lifecycle :refer [starting stopping]]
+            [net.cassiel.blofeld.manifest :as m]
             [net.cassiel.blofeld.component.presets :as presets]
             [net.cassiel.blofeld.async-tools :as async-tools]
             [cljs.core.async :as async :refer [>!]]
+            [cljs.core.async.interop :refer-macros [<p!]]
             [oops.core :refer [ocall]]))
 
 (defn handle-sysex-byte
@@ -40,6 +42,19 @@
     ;; FIX: call into data component instead.
     (presets/handle-preset-recall presets bank p0)))
 
+(defn handle-param-change
+  "Parameter change in from Max, two numbers. We aren't holding an edit buffer, so
+   we just convert to sysex, transmit and forget.
+   TODO: no range checking here."
+  [max-api param value]
+  (let [hi (/ param 128)
+        lo (mod param 128)
+        buffer 0                        ; Single mode - no multi support.
+        message [m/SOX m/WALDORF m/BLOFELD 0 m/SNDP buffer hi lo value m/EOX]]
+    (go
+      (doseq [x message]
+        (<p! (ocall max-api :outlet "int" x))))))
+
 (defn handle-force-bank
   "Blofeld doesn't reliably send bank select, so this manually puts us into the right
    bank according to what the Blofeld has selected.
@@ -70,6 +85,7 @@
                                  (ocall :addHandler number (partial handle-sysex-byte max-api presets *state*))
                                  (ocall :addHandler "ctlin" (partial handle-ctlin max-api *state*))
                                  (ocall :addHandler "pgmin" (partial handle-pgmin presets *state*))
+                                 (ocall :addHandler "param-change" (partial handle-param-change max-api))
                                  (ocall :addHandler "force-bank" (partial handle-force-bank max-api presets *state*)))
                                (assoc this
                                       :*state* *state*  ;; Plant that there in case we want to debug.
@@ -80,7 +96,7 @@
               :on installed?
               :action (fn [] (let [max-api (:max-api max-api)
                                    number (.-MESSAGE_TYPES.NUMBER max-api)]
-                               (do (dorun (map #(ocall max-api :removeHandlers %) [number "ctlin" "pgmin" "force-bank"]))
+                               (do (dorun (map #(ocall max-api :removeHandlers %) [number "ctlin" "pgmin" "param-change" "force-bank"]))
                                    (assoc this
                                           :*state* nil
                                           :installed? false)))))))

@@ -31,16 +31,14 @@
   [bytes]
   (->> bytes
        (drop m/SNDD-DATA-START) ; Lose 0xF0 and all header information.
-       (drop-last)              ; Lost checksum.
+       (drop-last)              ; Lose checksum.
        )
   )
 
 (defn handle-preset
-  "'Store' a preset. Send it out to the dictionary, but also adopt it as our edit buffer.
-   `bytes` starts from 0xF0, includes everything up to but excluding 0xF7.
-   We strip out all header information and checksum.
-   (The byte data might well encode a location as well, which we ignore and discard.)
-   For now, storage just means outputting a dictionary with a single entry."
+  "'Store' a preset.
+   `param-bytes` Is parameters, excluding headers and checksum.
+    For now, storage just means outputting a dictionary entry."
   [storage bank pgm param-bytes]
   (let [name    (patch-name param-bytes)
         tag     (patch-index-tag bank pgm)
