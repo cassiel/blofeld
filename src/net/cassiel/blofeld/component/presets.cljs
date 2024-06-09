@@ -36,17 +36,16 @@
     (println "> EOX")
 
     (matches [m/SOX m/WALDORF m/BLOFELD :any m/SNDD] bytes)
-    (let [hi         (nth bytes m/SNDD-LOCATION-HI)
-          lo         (nth bytes m/SNDD-LOCATION-LO)
-          checksum   (last bytes)
-          data-check (->> bytes
-                          (drop m/SNDD-DATA-START)
-                          butlast
+    (let [hi          (nth bytes m/SNDD-LOCATION-HI)
+          lo          (nth bytes m/SNDD-LOCATION-LO)
+          checksum    (last bytes)
+          param-bytes (storage/params-only bytes)
+          data-check  (->> param-bytes
                           (reduce +)
                           (bit-and 0x7F))]
       (do
-        (println "> SNDD - Sound Dump chk=" checksum "data-check=" data-check "patch-name=" (storage/patch-name bytes))
-        (storage/store-preset (:storage presets) hi lo bytes)))
+        (println "> SNDD - Sound Dump chk=" checksum "data-check=" data-check "patch-name=" (storage/patch-name param-bytes))
+        (storage/handle-preset (:storage presets) hi lo param-bytes)))
 
     (matches [m/SOX m/WALDORF m/BLOFELD :any m/SNDP] bytes)
     (let [location (nth bytes m/SNDP-LOCATION-LOCATION)   ; Unused for now - assumed 0.
