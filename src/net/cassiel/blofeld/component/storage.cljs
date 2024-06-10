@@ -26,7 +26,7 @@
                   (inc pgm))
   )
 
-(defn params-only
+(defn extract-payload
   "Remove header information (0xF0 onwards) and checksum. (We never see 0xF7.)"
   [bytes]
   (->> bytes
@@ -37,14 +37,14 @@
 
 (defn handle-preset
   "'Store' a preset.
-   `param-bytes` Is parameters, excluding headers and checksum.
-    For now, storage just means outputting a dictionary entry."
-  [storage bank pgm param-bytes]
-  (let [name    (patch-name param-bytes)
+   `payload` is parameters, excluding headers and checksum.
+    For now, storage just means inserting a dictionary entry."
+  [storage bank pgm payload]
+  (let [name    (patch-name payload)
         tag     (patch-index-tag bank pgm)
         max-api (:max-api storage)]
     (go (<p! (ocall (:max-api max-api) :updateDict m/BLOFELD-DICT #js ["patches" tag] (clj->js {:name name
-                                                                                                :data param-bytes
+                                                                                                :data payload
                                                                                                 :time (js/Date.)}))))
     )
   )

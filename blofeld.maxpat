@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 108.0, 127.0, 1442.0, 877.0 ],
+		"rect" : [ 218.0, 135.0, 1442.0, 877.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -878,7 +878,7 @@
 					"numinlets" : 7,
 					"numoutlets" : 7,
 					"outlettype" : [ "", "", "", "", "", "", "" ],
-					"patching_rect" : [ 240.0, 240.0, 383.0, 20.0 ],
+					"patching_rect" : [ 240.0, 250.0, 383.0, 20.0 ],
 					"style" : "cassiel",
 					"text" : "route int seen-bank ctlout pgmout param-change print"
 				}
@@ -963,6 +963,8 @@
 					"saved_object_attributes" : 					{
 						"autostart" : 0,
 						"defer" : 0,
+						"node_bin_path" : "",
+						"npm_bin_path" : "",
 						"watch" : 0
 					}
 ,

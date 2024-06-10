@@ -26,6 +26,9 @@
 
 (js/Date.)
 
+(doseq [[i x] (map-indexed vector "ABCDE")]
+  (println i x))
+
 ;; (a/extend-promises-as-pair-channels!)
 
 (def *STATE* (atom {}))

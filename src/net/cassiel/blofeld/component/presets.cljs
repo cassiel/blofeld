@@ -9,6 +9,7 @@
             [net.cassiel.blofeld.midi :as midi]
             [cljs.core.match :refer-macros [match]]
             [cljs.core.async :as a :refer [>!]]
+            [cljs.core.async.interop :refer-macros [<p!]]
             [oops.core :refer [ocall]]))
 
 (defn handle-preset-recall
@@ -26,6 +27,16 @@
          [([w & wanted'] :seq) ([a & actual'] :seq)] (and (= w a) (recur wanted' actual'))
          :else false))
 
+(defn- payload-out-as-params
+  "Rather brute-force: when we get a new patch in, we sequence out every parameter in
+   turn so that any Max UI elements are updated."
+  [max-api payload]
+  ;; Drop all these into a go block and wait for the promises - just to play nice.
+  ;; (We could also space them with a timeout.)
+  (go
+    (doseq [[i x] (map-indexed vector payload)]
+      (<p! (ocall max-api :outlet "param-change" i x)))))
+
 (defn handle-sysex
   "Bytes is a seq containing a leading 0xF0, or else an isolated 0xF7."
   [max-api presets bytes]
@@ -36,16 +47,17 @@
     (println "> EOX")
 
     (matches [m/SOX m/WALDORF m/BLOFELD :any m/SNDD] bytes)
-    (let [hi          (nth bytes m/SNDD-LOCATION-HI)
-          lo          (nth bytes m/SNDD-LOCATION-LO)
-          checksum    (last bytes)
-          param-bytes (storage/params-only bytes)
-          data-check  (->> param-bytes
+    (let [hi         (nth bytes m/SNDD-LOCATION-HI)
+          lo         (nth bytes m/SNDD-LOCATION-LO)
+          checksum   (last bytes)
+          payload    (storage/extract-payload bytes)
+          data-check (->> payload
                           (reduce +)
                           (bit-and 0x7F))]
       (do
-        (println "> SNDD - Sound Dump chk=" checksum "data-check=" data-check "patch-name=" (storage/patch-name param-bytes))
-        (storage/handle-preset (:storage presets) hi lo param-bytes)))
+        (println "> SNDD - Sound Dump chk=" checksum "data-check=" data-check "patch-name=" (storage/patch-name payload))
+        (storage/handle-preset (:storage presets) hi lo payload)
+        (payload-out-as-params max-api payload)))
 
     (matches [m/SOX m/WALDORF m/BLOFELD :any m/SNDP] bytes)
     (let [location (nth bytes m/SNDP-LOCATION-LOCATION)   ; Unused for now - assumed 0.
