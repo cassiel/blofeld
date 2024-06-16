@@ -46,14 +46,14 @@
   "Parameter change in from Max, two numbers. We aren't holding an edit buffer, so
    we just convert to sysex, transmit and forget.
    TODO: no range checking here."
-  [max-api param value]
-  (let [hi (/ param 128)
+  [sysex-marshall-chan param value]
+  (let [hi (int (/ param 128))
         lo (mod param 128)
         buffer 0                        ; Single mode - no multi support.
         message [m/SOX m/WALDORF m/BLOFELD 0 m/SNDP buffer hi lo value m/EOX]]
-    (go
-      (doseq [x message]
-        (<p! (ocall max-api :outlet "int" x))))))
+    #_ (println "SENDING" message)
+    (go (>! sysex-marshall-chan message))
+    ))
 
 (defn handle-force-bank
   "Blofeld doesn't reliably send bank select, so this manually puts us into the right
@@ -80,15 +80,19 @@
               :on installed?
               :action (fn [] (let [max-api (:max-api max-api)
                                    number (.-MESSAGE_TYPES.NUMBER max-api)
+                                   sysex-marshall-chan (async/chan 10)
+                                   ;; Sysex transmission needs to be spaced out, so let's add some capacity.
                                    *state* (atom nil)]
                                (doto max-api
                                  (ocall :addHandler number (partial handle-sysex-byte max-api presets *state*))
                                  (ocall :addHandler "ctlin" (partial handle-ctlin max-api *state*))
                                  (ocall :addHandler "pgmin" (partial handle-pgmin presets *state*))
-                                 (ocall :addHandler "param-change" (partial handle-param-change max-api))
+                                 (ocall :addHandler "param-change" (partial handle-param-change sysex-marshall-chan))
                                  (ocall :addHandler "force-bank" (partial handle-force-bank max-api presets *state*)))
+                               (async-tools/marshall-sysex-out max-api sysex-marshall-chan)
                                (assoc this
                                       :*state* *state*  ;; Plant that there in case we want to debug.
+                                      :sysex-marshall-chan sysex-marshall-chan
                                       :installed? true)))))
 
   (stop [this]
@@ -97,6 +101,8 @@
               :action (fn [] (let [max-api (:max-api max-api)
                                    number (.-MESSAGE_TYPES.NUMBER max-api)]
                                (do (dorun (map #(ocall max-api :removeHandlers %) [number "ctlin" "pgmin" "param-change" "force-bank"]))
+                                   (async/close! (:sysex-marshall-chan this))
                                    (assoc this
                                           :*state* nil
+                                          :sysex-marshall-chan nil
                                           :installed? false)))))))
