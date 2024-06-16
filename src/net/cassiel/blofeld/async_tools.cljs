@@ -6,7 +6,7 @@
             [oops.core :refer [ocall]]))
 
 (defn throttle
-  "Speed limit (by discarding) messages coming into in-ch, echoing to out-chan after a timeout."
+  "Speed limit (by discarding) messages coming into `in-ch`, echoing to out-chan after a timeout."
   [in-ch out-ch]
   (go-loop [held-value nil]
     (println "into slowdown with" held-value)
