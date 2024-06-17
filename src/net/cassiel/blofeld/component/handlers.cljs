@@ -80,8 +80,9 @@
               :on installed?
               :action (fn [] (let [max-api (:max-api max-api)
                                    number (.-MESSAGE_TYPES.NUMBER max-api)
-                                   sysex-marshall-chan (async/chan 10)
-                                   ;; Sysex transmission needs to be spaced out, so let's add some capacity.
+                                   sysex-marshall-chan (async/chan)
+                                   ;; Sysex transmission needs to be spaced out. We had a buffered chan at one
+                                   ;; stage, but let's just let the go-blocks stack up.
                                    *state* (atom nil)]
                                (doto max-api
                                  (ocall :addHandler number (partial handle-sysex-byte max-api presets *state*))
